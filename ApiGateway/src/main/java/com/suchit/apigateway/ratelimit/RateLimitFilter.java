@@ -1,10 +1,12 @@
 package com.suchit.apigateway.ratelimit;
 
 import org.springframework.core.Ordered;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
+import com.suchit.apigateway.ratelimit.service.RateLimitConfigService;
 import com.suchit.apigateway.util.JwtUtils;
 
 import reactor.core.publisher.Mono;
@@ -16,11 +18,14 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 
 	private final RateLimitService rateLimitService;
 	private final JwtUtils jwtUtils;
+	private final RateLimitConfigService rateLimitConfigService;
 
-	public RateLimitFilter(RateLimitService rateLimitService, JwtUtils jwtUtils) {
+	public RateLimitFilter(RateLimitService rateLimitService, JwtUtils jwtUtils,
+			RateLimitConfigService rateLimitConfigService) {
 
 		this.rateLimitService = rateLimitService;
 		this.jwtUtils = jwtUtils;
+		this.rateLimitConfigService = rateLimitConfigService;
 	}
 
 //	@Override
@@ -61,6 +66,7 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+		System.out.println("JWT FILTER EXECUTED");
 
 		String path = exchange.getRequest().getURI().getPath();
 
@@ -94,7 +100,11 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 
 			if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 
-				return chain.filter(exchange);
+				System.out.println("NO TOKEN FOUND");
+
+				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+
+				return exchange.getResponse().setComplete();
 			}
 
 			String token = authHeader.substring(7);
@@ -102,14 +112,22 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 			String email = jwtUtils.getUsernameFromToken(token);
 
 			String role = jwtUtils.getRoleFromToken(token);
+			if (path.startsWith("/api/rate-limit")) {
+
+				if (!"ADMIN".equals(role)) {
+
+					exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+
+					return exchange.getResponse().setComplete();
+				}
+			}
 
 //			System.out.println("Email = " + email);
 //			System.out.println("Role = " + role);
 
 			redisKey = "rate_limit:" + email + ":" + method + ":" + path;
 			System.out.println(redisKey);
-			
-			
+
 //			if ("ADMIN".equals(role)) {
 //
 //				limit = 100;
@@ -118,33 +136,10 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 //
 //				limit = 50;
 //			}
-			
-			if (path.startsWith("/api/products")) {
 
-			    if ("ADMIN".equals(role)) {
+			limit = rateLimitConfigService.getLimit(path, role);
 
-			        limit = 100;
-
-			    } else {
-
-			        limit = 50;
-			    }
-
-			} else if (path.startsWith("/api/orders")) {
-
-			    if ("ADMIN".equals(role)) {
-
-			        limit = 200;
-
-			    } else {
-
-			        limit = 75;
-			    }
-
-			} else {
-
-			    limit = 10;
-			}
+			System.out.println("Limit From DB = " + limit);
 //			System.out.println("Limit = " + limit);
 		}
 
