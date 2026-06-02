@@ -29,7 +29,8 @@ public class RateLimitConfigServiceImpl implements RateLimitConfigService {
 
 			return RateLimitPolicy.builder().bucketCapacity(10).refillRate(1).build();
 		}
-
+		System.out.println(config.getBucketCapacity());
+		System.out.println(config.getRefillRate());
 		return RateLimitPolicy.builder().bucketCapacity(config.getBucketCapacity()).refillRate(config.getRefillRate())
 				.build();
 	}
