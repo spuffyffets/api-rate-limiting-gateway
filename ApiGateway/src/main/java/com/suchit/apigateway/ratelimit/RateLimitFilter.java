@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
+import com.suchit.apigateway.ratelimit.dto.RateLimitPolicy;
 import com.suchit.apigateway.ratelimit.service.RateLimitConfigService;
 import com.suchit.apigateway.util.JwtUtils;
 
@@ -28,79 +29,44 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 		this.rateLimitConfigService = rateLimitConfigService;
 	}
 
-//	@Override
-//	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-//
-//		String path = exchange.getRequest().getURI().getPath();
-//
-//		// Skip Auth APIs
-//		if (path.startsWith("/api/auth")) {
-//			return chain.filter(exchange);
-//		}
-//
-//		String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
-//
-//		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-//
-//			return chain.filter(exchange);
-//		}
-//
-//		String token = authHeader.substring(7);
-//
-//		String email = jwtUtils.getUsernameFromToken(token);
-//
-//		String redisKey = "rate_limit:" + email;
-//
-//		return rateLimitService.isAllowed(redisKey).flatMap(allowed -> {
-//
-//			if (!allowed) {
-//
-//				exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-//
-//				return exchange.getResponse().setComplete();
-//			}
-//
-//			return chain.filter(exchange);
-//		});
-//	}
-
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+
 		System.out.println("JWT FILTER EXECUTED");
 
 		String path = exchange.getRequest().getURI().getPath();
 
 		String method = exchange.getRequest().getMethod().name();
 
-		// test karay sathi fkt
-
-		System.out.println("Method = " + method);
-
 		String redisKey;
-		int limit;
 
-		// Login API Rate Limit
+		int capacity;
+		int refillRate;
+
+		// Login API
 		if (path.equals("/api/auth/login")) {
 
 			redisKey = "login_limit";
-			limit = 5;
 
+			capacity = 5;
+			refillRate = 1;
 		}
-		// Register API Rate Limit
+
+		// Register API
 		else if (path.equals("/api/auth/register")) {
 
 			redisKey = "register_limit";
-			limit = 3;
 
+			capacity = 3;
+			refillRate = 1;
 		}
+
 		// Protected APIs
 		else {
 
 			String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
 
 			if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-
-				System.out.println("NO TOKEN FOUND");
 
 				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
 
@@ -112,6 +78,8 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 			String email = jwtUtils.getUsernameFromToken(token);
 
 			String role = jwtUtils.getRoleFromToken(token);
+
+			// Only ADMIN can manage limits
 			if (path.startsWith("/api/rate-limit")) {
 
 				if (!"ADMIN".equals(role)) {
@@ -122,28 +90,20 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 				}
 			}
 
-//			System.out.println("Email = " + email);
-//			System.out.println("Role = " + role);
-
 			redisKey = "rate_limit:" + email + ":" + method + ":" + path;
-			System.out.println(redisKey);
 
-//			if ("ADMIN".equals(role)) {
-//
-//				limit = 100;
-//
-//			} else {
-//
-//				limit = 50;
-//			}
+			RateLimitPolicy policy = rateLimitConfigService.getPolicy(path, role);
 
-			limit = rateLimitConfigService.getLimit(path, role);
+			capacity = policy.getBucketCapacity();
 
-			System.out.println("Limit From DB = " + limit);
-//			System.out.println("Limit = " + limit);
+			refillRate = policy.getRefillRate();
+
+			System.out.println("Capacity = " + capacity);
+
+			System.out.println("Refill Rate = " + refillRate);
 		}
 
-		return rateLimitService.isAllowed(redisKey, limit).flatMap(allowed -> {
+		return rateLimitService.isAllowed(redisKey, capacity, refillRate).flatMap(allowed -> {
 
 			if (!allowed) {
 

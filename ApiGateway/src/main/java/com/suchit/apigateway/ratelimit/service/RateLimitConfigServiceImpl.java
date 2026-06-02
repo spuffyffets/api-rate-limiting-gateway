@@ -4,6 +4,7 @@ import com.suchit.apigateway.ratelimit.repository.RateLimitRepository;
 
 import org.springframework.stereotype.Service;
 
+import com.suchit.apigateway.ratelimit.dto.RateLimitPolicy;
 import com.suchit.apigateway.ratelimit.dto.RateLimitRequest;
 import com.suchit.apigateway.ratelimit.dto.Response;
 import com.suchit.apigateway.ratelimit.entity.*;
@@ -20,23 +21,24 @@ public class RateLimitConfigServiceImpl implements RateLimitConfigService {
 	}
 
 	@Override
-	public Integer getLimit(String apiPath, String role) {
+	public RateLimitPolicy getPolicy(String apiPath, String role) {
 
 		RateLimitConfig config = rateLimitRepository.findByApiPathAndRole(apiPath, role).orElse(null);
 
 		if (config == null) {
 
-			return 10;
+			return RateLimitPolicy.builder().bucketCapacity(10).refillRate(1).build();
 		}
 
-		return config.getRequestLimit();
+		return RateLimitPolicy.builder().bucketCapacity(config.getBucketCapacity()).refillRate(config.getRefillRate())
+				.build();
 	}
 
 	@Override
 	public Response addRateLimit(RateLimitRequest request) {
 
 		RateLimitConfig config = RateLimitConfig.builder().apiPath(request.getApiPath()).role(request.getRole())
-				.requestLimit(request.getRequestLimit()).build();
+				.bucketCapacity(request.getBucketCapacity()).refillRate(request.getRefillRate()).build();
 
 		rateLimitRepository.save(config);
 
@@ -60,9 +62,11 @@ public class RateLimitConfigServiceImpl implements RateLimitConfigService {
 
 		config.setRole(request.getRole());
 
-		config.setRequestLimit(request.getRequestLimit());
+		config.setBucketCapacity(request.getBucketCapacity());
 
-		rateLimitRepository.save(config);	
+		config.setRefillRate(request.getRefillRate());
+
+		rateLimitRepository.save(config);
 
 		return Response.builder().status(200).message("Rate Limit Updated Successfully").build();
 	}

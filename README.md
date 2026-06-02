@@ -1,5 +1,11 @@
 # API Rate Limiting Gateway
 
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green)
+![Redis](https://img.shields.io/badge/Redis-Rate%20Limiting-red)
+![JWT](https://img.shields.io/badge/JWT-Authentication-blue)
+![MySQL](https://img.shields.io/badge/MySQL-Dynamic%20Config-blue)
+
 ## Overview
 
 API Rate Limiting Gateway is a microservices-based project built using Spring Boot, Spring Cloud Gateway, Redis, JWT Authentication, and MySQL.
@@ -21,18 +27,20 @@ The gateway sits between clients and backend microservices and ensures that requ
 
 ## Architecture
 
+
+```text
 Client
-↓
+   ↓
 API Gateway (Port 8080)
-↓
-Auth Service (Port 8081)
-Product Service (Port 8082)
-Order Service (Port 8083)
+   ↓
+├── Auth Service (Port 8081)
+├── Product Service (Port 8082)
+└── Order Service (Port 8083)
 
 External Components:
-
-* Redis (Rate Limiting Storage)
-* MySQL (Rate Limit Configuration)
+├── Redis
+└── MySQL
+```
 
 ---
 
@@ -194,21 +202,39 @@ Only ADMIN users can access these APIs.
 
 ## Project Structure
 
+```text
 ApiGateway
+│
 ├── filter
+│     └── JwtAuthenticationFilter
+│
 ├── ratelimit
-│ ├── RateLimitFilter
-│ ├── RateLimitService
-│ ├── RedisConfig
-│ ├── entity
-│ ├── repository
-│ ├── service
-│ ├── controller
-│ └── dto
+│     ├── RateLimitFilter
+│     ├── RateLimitService
+│     ├── RedisConfig
+│     │
+│     ├── entity
+│     │     └── RateLimitConfig
+│     │
+│     ├── repository
+│     │     └── RateLimitRepository
+│     │
+│     ├── service
+│     │     ├── RateLimitConfigService
+│     │     └── RateLimitConfigServiceImpl
+│     │
+│     ├── controller
+│     │     └── RateLimitController
+│     │
+│     └── dto
+│           ├── RateLimitRequest
+│           └── Response
+│
 ├── util
+│     └── JwtUtils
+│
 └── config
-
----
+```
 
 ## Rate Limiting Flow
 

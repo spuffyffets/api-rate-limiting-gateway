@@ -1,13 +1,11 @@
 package com.suchit.apigateway.ratelimit.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class RateLimitRequest {
-
-    private String apiPath;
-
-    private String role;
+@Builder
+public class RateLimitPolicy {
 
     private Integer bucketCapacity;
 

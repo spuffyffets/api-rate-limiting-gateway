@@ -20,5 +20,7 @@ public class RateLimitConfig {
 
     private String role;
 
-    private Integer requestLimit;
+    private Integer bucketCapacity;
+
+    private Integer refillRate;
 }

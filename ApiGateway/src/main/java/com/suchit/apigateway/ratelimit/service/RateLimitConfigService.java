@@ -1,11 +1,12 @@
 package com.suchit.apigateway.ratelimit.service;
 
+import com.suchit.apigateway.ratelimit.dto.RateLimitPolicy;
 import com.suchit.apigateway.ratelimit.dto.RateLimitRequest;
 import com.suchit.apigateway.ratelimit.dto.Response;
 
 public interface RateLimitConfigService {
 
-	Integer getLimit(String apiPath, String role);
+	RateLimitPolicy getPolicy(String apiPath, String role);
 
 	Response addRateLimit(RateLimitRequest request);
 
