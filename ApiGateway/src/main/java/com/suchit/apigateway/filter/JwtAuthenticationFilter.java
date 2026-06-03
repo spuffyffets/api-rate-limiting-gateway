@@ -25,7 +25,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
-		System.out.println("JWT FILTER EXECUTED");
+//		System.out.println("JWT FILTER EXECUTED");
 		String path = exchange.getRequest().getURI().getPath();
 
 		// Public APIs
@@ -53,23 +53,16 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 		}
 		String role = jwtUtils.getRoleFromToken(token);
 
-		String method =
-		        exchange.getRequest()
-		                .getMethod()
-		                .name();
+		String method = exchange.getRequest().getMethod().name();
 
-		
 		if ("MANAGER".equals(role)) {
 
-		    if ("POST".equals(method)
-		            || "PUT".equals(method)
-		            || "DELETE".equals(method)) {
+			if ("POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method)) {
 
-		        exchange.getResponse()
-		                .setStatusCode(HttpStatus.FORBIDDEN);
+				exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
 
-		        return exchange.getResponse().setComplete();
-		    }
+				return exchange.getResponse().setComplete();
+			}
 		}
 
 		return chain.filter(exchange);

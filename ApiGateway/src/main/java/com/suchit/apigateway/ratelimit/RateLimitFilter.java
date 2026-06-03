@@ -33,7 +33,7 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
-		System.out.println("JWT FILTER EXECUTED");
+//		System.out.println("JWT FILTER EXECUTED");
 
 		String path = exchange.getRequest().getURI().getPath();
 
@@ -99,9 +99,9 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 
 			refillRate = policy.getRefillRate();
 
-			System.out.println("Capacity = " + capacity);
-
-			System.out.println("Refill Rate = " + refillRate);
+//			System.out.println("Capacity = " + capacity);
+//
+//			System.out.println("Refill Rate = " + refillRate);
 		}
 
 		return rateLimitService.isAllowed(redisKey, capacity, refillRate).flatMap(allowed -> {

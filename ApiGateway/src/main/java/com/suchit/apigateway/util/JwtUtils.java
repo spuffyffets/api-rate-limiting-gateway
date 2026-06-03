@@ -16,64 +16,47 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class JwtUtils {
 
-    private SecretKey key;
+	private SecretKey key;
 
-    @Value("${secreteJwtString}")
-    private String secreteJwtString;
+	@Value("${secreteJwtString}")
+	private String secreteJwtString;
 
-    @PostConstruct
-    public void init() {
+	@PostConstruct
+	public void init() {
 
-        byte[] keyBytes =
-                secreteJwtString.getBytes(StandardCharsets.UTF_8);
+		byte[] keyBytes = secreteJwtString.getBytes(StandardCharsets.UTF_8);
 
-        key = new SecretKeySpec(
-                keyBytes,
-                "HmacSHA256");
-    }
+		key = new SecretKeySpec(keyBytes, "HmacSHA256");
+	}
 
-    public String getUsernameFromToken(String token) {
+	public String getUsernameFromToken(String token) {
 
-        return extractClaims(
-                token,
-                Claims::getSubject);
-    }
+		return extractClaims(token, Claims::getSubject);
+	}
 
-    public String getRoleFromToken(String token) {
+	public String getRoleFromToken(String token) {
 
-        return extractClaims(
-                token,
-                claims -> claims.get("role", String.class));
-    }
+		return extractClaims(token, claims -> claims.get("role", String.class));
+	}
 
-    public boolean isTokenValid(String token) {
+	public boolean isTokenValid(String token) {
 
-        try {
+		try {
 
-            Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token);
+			Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
 
-            return true;
+			return true;
 
-        } catch (Exception e) {
+		} catch (Exception e) {
 
-            return false;
-        }
-    }
+			return false;
+		}
+	}
 
-    private <T> T extractClaims(
-            String token,
-            Function<Claims, T> resolver) {
+	private <T> T extractClaims(String token, Function<Claims, T> resolver) {
 
-        Claims claims =
-                Jwts.parser()
-                        .verifyWith(key)
-                        .build()
-                        .parseSignedClaims(token)
-                        .getPayload();
+		Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
 
-        return resolver.apply(claims);
-    }
+		return resolver.apply(claims);
+	}
 }

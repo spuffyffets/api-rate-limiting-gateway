@@ -1,7 +1,8 @@
 package com.suchit.apigateway.ratelimit;
 
-import java.time.Duration;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.time.Duration;
 
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class RateLimitService {
 
 				return Mono.just(false);
 			}
-			System.out.println("Tokens Remaining = " + bucket.getTokens());
+//			System.out.println("Tokens Remaining = " + bucket.getTokens());
 
 			bucket.setTokens(bucket.getTokens() - 1);
 
@@ -38,7 +39,8 @@ public class RateLimitService {
 
 				String bucketJson = objectMapper.writeValueAsString(bucket);
 
-				return redisTemplate.opsForValue().set(key, bucketJson).thenReturn(true);
+				return redisTemplate.opsForValue().set(key, bucketJson)
+						.then(redisTemplate.expire(key, Duration.ofHours(1))).thenReturn(true);
 
 			} catch (Exception e) {
 
@@ -70,14 +72,20 @@ public class RateLimitService {
 
 		long currentTime = System.currentTimeMillis();
 
-		long elapsedTime = (currentTime - bucket.getLastRefillTime()) / 1000;
+		long elapsedSeconds = (currentTime - bucket.getLastRefillTime()) / 1000;
 
-		int tokensToAdd = (int) elapsedTime * refillRate;
+		if (elapsedSeconds <= 0) {
+
+			return bucket;
+		}
+
+		int tokensToAdd = (int) (elapsedSeconds * refillRate);
 
 		int newTokenCount = Math.min(capacity, bucket.getTokens() + tokensToAdd);
 
 		bucket.setTokens(newTokenCount);
 
+		// Update timestamp only when refill actually happens
 		bucket.setLastRefillTime(currentTime);
 
 		return bucket;

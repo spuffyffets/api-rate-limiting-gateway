@@ -1,9 +1,5 @@
 package com.suchit.auth.exception;
 
-
-
-
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,23 +19,18 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
-    private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
+	@Override
+	public void handle(HttpServletRequest request, HttpServletResponse response,
+			AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
-    @Override
-    public void handle(HttpServletRequest request,
-                       HttpServletResponse response,
-                       AccessDeniedException accessDeniedException)
-            throws IOException, ServletException {
+		Response errorResponse = Response.builder().status(HttpStatus.FORBIDDEN.value())
+				.message(accessDeniedException.getMessage()).build();
 
-        Response errorResponse = Response.builder()
-                .status(HttpStatus.FORBIDDEN.value())
-                .message(accessDeniedException.getMessage())
-                .build();
+		response.setContentType("application/json");
+		response.setStatus(HttpStatus.FORBIDDEN.value());
+		response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
 
-        response.setContentType("application/json");
-        response.setStatus(HttpStatus.FORBIDDEN.value());
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-
-    }
+	}
 }

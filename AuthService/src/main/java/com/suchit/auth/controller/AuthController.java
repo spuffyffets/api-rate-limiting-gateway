@@ -16,28 +16,26 @@ import com.suchit.auth.service.AuthService;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private AuthService authService;
+	private AuthService authService;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+	public AuthController(AuthService authService) {
+		this.authService = authService;
+	}
 
-    @PostMapping("/register")
-    public Response register(
-            @RequestBody RegisterRequest request) {
+	@PostMapping("/register")
+	public Response register(@RequestBody RegisterRequest request) {
 
-        return authService.register(request);
-    }
+		return authService.register(request);
+	}
 
-    @PostMapping("/login")
-    public Response login(
-            @RequestBody LoginRequest request) {
+	@PostMapping("/login")
+	public Response login(@RequestBody LoginRequest request) {
 
-        return authService.login(request);
-    }
-    
-    @GetMapping("/profile")
-    public String profile() {
-        return "Authenticated User";
-    }
+		return authService.login(request);
+	}
+
+	@GetMapping("/profile")
+	public String profile() {
+		return "Authenticated User";
+	}
 }
