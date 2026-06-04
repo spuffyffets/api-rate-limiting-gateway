@@ -29,7 +29,7 @@ The gateway sits between clients and backend microservices and ensures that requ
 
 ### System Architecture
 
-![System Architecture](docs/images/redis_api_gateway_architecture.svg)
+![System Architecture](images/redis_api_gateway_architecture.svg)
 
 ### Architecture Overview
 
