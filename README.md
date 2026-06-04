@@ -27,22 +27,23 @@ The gateway sits between clients and backend microservices and ensures that requ
 
 ## Architecture
 
+### System Architecture
 
-```text
-Client
-   ↓
-API Gateway (Port 8080)
-   ↓
-├── Auth Service (Port 8081)
-├── Product Service (Port 8082)
-└── Order Service (Port 8083)
+![System Architecture](docs/images/redis_api_gateway_architecture.svg)
 
-External Components:
-├── Redis
-└── MySQL
-```
+### Architecture Overview
 
----
+The API Gateway acts as the central entry point for all client requests.
+
+Responsibilities include:
+
+- JWT Authentication & Validation
+- Role-Based Authorization
+- Token Bucket Rate Limiting
+- Dynamic Policy Loading
+- Request Routing
+
+Redis stores token bucket state, while MySQL stores dynamic rate-limiting policies. The gateway validates requests before forwarding them to downstream microservices.
 
 ## Technologies Used
 
