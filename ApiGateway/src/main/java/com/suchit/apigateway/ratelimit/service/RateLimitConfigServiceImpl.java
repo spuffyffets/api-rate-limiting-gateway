@@ -1,8 +1,7 @@
 package com.suchit.apigateway.ratelimit.service;
 
 import com.suchit.apigateway.ratelimit.repository.RateLimitRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
+
 
 import org.springframework.stereotype.Service;
 
@@ -16,16 +15,11 @@ import com.suchit.apigateway.ratelimit.service.RateLimitConfigService;
 public class RateLimitConfigServiceImpl implements RateLimitConfigService {
 
 	private final RateLimitRepository rateLimitRepository;
-	private final ReactiveStringRedisTemplate redisTemplate;
+	
 
-	private final ObjectMapper objectMapper;
-
-	public RateLimitConfigServiceImpl(RateLimitRepository rateLimitRepository,
-			ReactiveStringRedisTemplate redisTemplate, ObjectMapper objectMapper) {
+	public RateLimitConfigServiceImpl(RateLimitRepository rateLimitRepository) {
 
 		this.rateLimitRepository = rateLimitRepository;
-		this.redisTemplate = redisTemplate;
-		this.objectMapper = objectMapper;
 	}
 
 	@Override

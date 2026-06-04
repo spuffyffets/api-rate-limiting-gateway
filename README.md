@@ -126,6 +126,39 @@ rate_limit:user@gmail.com:GET:/api/products
 
 ---
 
+### Token Bucket Rate Limiting
+
+The gateway uses the Token Bucket Algorithm to control request traffic.
+
+Each API and user combination maintains a bucket in Redis.
+
+Bucket Configuration:
+
+* Bucket Capacity
+* Refill Rate
+
+Example:
+
+Capacity = 100 tokens
+
+Refill Rate = 10 tokens/sec
+
+Request Flow:
+
+1. Request arrives
+2. Bucket is loaded from Redis
+3. Tokens are refilled based on elapsed time
+4. One token is consumed
+5. Request is allowed if tokens remain
+6. HTTP 429 is returned if bucket is empty
+
+Benefits:
+
+* Handles traffic bursts
+* Prevents API abuse
+* Smooth request throttling
+* Production-ready rate limiting strategy
+
 ### Per User Rate Limiting
 
 Each user has an independent rate limit.
@@ -172,12 +205,12 @@ Rate limits are stored in MySQL.
 
 Example:
 
-| API Path      | Role    | Request Limit |
-| ------------- | ------- | ------------- |
-| /api/products | ADMIN   | 100           |
-| /api/products | MANAGER | 50            |
-| /api/orders   | ADMIN   | 200           |
-| /api/orders   | MANAGER | 75            |
+| API Path      | Role    | Bucket Capacity | Refill Rate |
+| ------------- | ------- | --------------- | ----------- |
+| /api/products | ADMIN   | 100             | 10          |
+| /api/products | MANAGER | 50              | 5           |
+| /api/orders   | ADMIN   | 100             | 10          |
+| /api/orders   | MANAGER | 50              | 5           |
 
 Limits can be changed without modifying source code.
 
@@ -239,14 +272,15 @@ ApiGateway
 
 ## Rate Limiting Flow
 
-1. Client sends request.
+11. Client sends request.
 2. API Gateway validates JWT.
 3. User role is extracted.
-4. Gateway loads limit from MySQL.
-5. Redis counter is checked.
-6. Request is allowed or blocked.
-7. Request is forwarded to target service.
-
+4. Gateway loads Token Bucket policy from MySQL.
+5. Bucket state is loaded from Redis.
+6. Bucket is refilled based on elapsed time.
+7. One token is consumed.
+8. If no tokens remain, HTTP 429 is returned.
+9. Otherwise request is forwarded to target service.
 ---
 
 ## Sample Response
@@ -261,7 +295,6 @@ HTTP 429 Too Many Requests
 
 ## Future Enhancements
 
-* Token Bucket Algorithm
 * IP-Based Rate Limiting
 * Rate Limit Monitoring Dashboard
 * Angular Admin UI
@@ -283,3 +316,6 @@ Through this project I learned:
 * Role-Based Access Control
 * Distributed Rate Limiting Design
 * Secure API Development
+* Token Bucket Algorithm
+* Redis-Based Distributed Rate Limiting
+* API Traffic Throttling Strategies
