@@ -1,6 +1,5 @@
 package com.suchit.auth.security;
 
-
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,40 +15,40 @@ import java.util.List;
 @Builder
 public class AuthUser implements UserDetails {
 
-    private User user;
+	private User user;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(user.getRole().name()));
-    }
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return List.of(new SimpleGrantedAuthority(user.getRole().name()));
+	}
 
-    @Override
-    public String getPassword() {
-        return user.getPassword();
-    }
+	@Override
+	public String getPassword() {
+		return user.getPassword();
+	}
 
-    @Override
-    public String getUsername() {
-        return user.getEmail();
-    }
+	@Override
+	public String getUsername() {
+		return user.getEmail();
+	}
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
-    }
+	@Override
+	public boolean isAccountNonExpired() {
+		return UserDetails.super.isAccountNonExpired();
+	}
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
 
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
 }

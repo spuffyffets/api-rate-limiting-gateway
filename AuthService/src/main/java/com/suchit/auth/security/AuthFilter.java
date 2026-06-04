@@ -20,43 +20,43 @@ import java.io.IOException;
 @Slf4j
 @RequiredArgsConstructor
 public class AuthFilter extends OncePerRequestFilter {
-    private final JwtUtils jwtUtils;
-    private final CustomUserDetailsService customUserDetailsService;
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+	private final JwtUtils jwtUtils;
+	private final CustomUserDetailsService customUserDetailsService;
 
-        String token = getTokenFromRequest(request);
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
 
-        if(token !=null){
-            String email = jwtUtils.getUsernameFromToken(token);
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+		String token = getTokenFromRequest(request);
 
-            if (StringUtils.hasText(email) && jwtUtils.isTokenValid(token, userDetails)) {
-                log.info("Token is valid, {}", email);
+		if (token != null) {
+			String email = jwtUtils.getUsernameFromToken(token);
+			UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                );
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
-        }
+			if (StringUtils.hasText(email) && jwtUtils.isTokenValid(token, userDetails)) {
+				log.info("Token is valid, {}", email);
 
-        try {
-            filterChain.doFilter(request, response);
+				UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+						userDetails, null, userDetails.getAuthorities());
+				authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+			}
+		}
 
-        }catch (Exception e){
-            log.error("Error occuerd in AuthFilter: {}", e.getMessage() );
-        }
+		try {
+			filterChain.doFilter(request, response);
 
-    }
+		} catch (Exception e) {
+			log.error("Error occuerd in AuthFilter: {}", e.getMessage());
+		}
 
-    private String getTokenFromRequest(HttpServletRequest request){
-        String tokenWithBearer = request.getHeader("Authorization");
-        if (tokenWithBearer != null && tokenWithBearer.startsWith("Bearer ")) {
-            return tokenWithBearer.substring(7);
-        }
-        return null;
-    }
+	}
+
+	private String getTokenFromRequest(HttpServletRequest request) {
+		String tokenWithBearer = request.getHeader("Authorization");
+		if (tokenWithBearer != null && tokenWithBearer.startsWith("Bearer ")) {
+			return tokenWithBearer.substring(7);
+		}
+		return null;
+	}
 }

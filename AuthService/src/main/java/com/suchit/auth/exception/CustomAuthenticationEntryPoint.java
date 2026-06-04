@@ -1,4 +1,5 @@
 package com.suchit.auth.exception;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,24 +19,18 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
+	@Override
+	public void commence(HttpServletRequest request, HttpServletResponse response,
+			AuthenticationException authException) throws IOException, ServletException {
 
-    @Override
-    public void commence(HttpServletRequest request,
-                         HttpServletResponse response,
-                         AuthenticationException authException)
-            throws IOException, ServletException {
+		Response errorResponse = Response.builder().status(HttpStatus.UNAUTHORIZED.value())
+				.message(authException.getMessage()).build();
 
+		response.setContentType("application/json");
+		response.setStatus(HttpStatus.UNAUTHORIZED.value());
+		response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
 
-        Response errorResponse = Response.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .message(authException.getMessage())
-                .build();
-
-        response.setContentType("application/json");
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-
-    }
+	}
 }

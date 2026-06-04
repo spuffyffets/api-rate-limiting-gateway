@@ -29,50 +29,36 @@ import com.suchit.auth.exception.CustomAuthenticationEntryPoint;
 @RequiredArgsConstructor
 @Slf4j
 public class SecurityFilter {
-    private final AuthFilter authFilter;
-    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+	private final AuthFilter authFilter;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+	private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
-                .exceptionHandling(exception -> exception.accessDeniedHandler(customAccessDeniedHandler)
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)
-                ).authorizeHttpRequests(request -> request
-                        .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
-                
-                
-                
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+		httpSecurity.csrf(AbstractHttpConfigurer::disable).cors(Customizer.withDefaults())
+				.exceptionHandling(exception -> exception.accessDeniedHandler(customAccessDeniedHandler)
+						.authenticationEntryPoint(customAuthenticationEntryPoint))
+				.authorizeHttpRequests(request -> request.requestMatchers("/api/auth/register", "/api/auth/login")
+						.permitAll().anyRequest().authenticated())
+
 //                .authorizeHttpRequests(request -> request
 //                        .requestMatchers("/api/auth/**").permitAll()
 //                        .anyRequest().authenticated()
 //                )
-                .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
-        return httpSecurity.build();
-    }
+				.sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+		return httpSecurity.build();
+	}
 
-    @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
-
-
-
-
-
-
-
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+			throws Exception {
+		return authenticationConfiguration.getAuthenticationManager();
+	}
 
 }
