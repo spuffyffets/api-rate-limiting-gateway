@@ -237,37 +237,184 @@ Only ADMIN users can access these APIs.
 ## Project Structure
 
 ```text
-ApiGateway
-│
-├── filter
-│     └── JwtAuthenticationFilter
-│
-├── ratelimit
-│     ├── RateLimitFilter
-│     ├── RateLimitService
-│     ├── RedisConfig
-│     │
-│     ├── entity
-│     │     └── RateLimitConfig
-│     │
-│     ├── repository
-│     │     └── RateLimitRepository
-│     │
-│     ├── service
-│     │     ├── RateLimitConfigService
-│     │     └── RateLimitConfigServiceImpl
-│     │
-│     ├── controller
-│     │     └── RateLimitController
-│     │
-│     └── dto
-│           ├── RateLimitRequest
-│           └── Response
-│
-├── util
-│     └── JwtUtils
-│
-└── config
+Directory structure:
+└── spuffyffets-api-rate-limiting-gateway/
+    ├── README.md
+    ├── ApiGateway/
+    │   ├── mvnw
+    │   ├── mvnw.cmd
+    │   ├── pom.xml
+    │   ├── src/
+    │   │   ├── main/
+    │   │   │   ├── java/
+    │   │   │   │   └── com/
+    │   │   │   │       └── suchit/
+    │   │   │   │           └── apigateway/
+    │   │   │   │               ├── ApiGatewayApplication.java
+    │   │   │   │               ├── filter/
+    │   │   │   │               │   └── JwtAuthenticationFilter.java
+    │   │   │   │               ├── ratelimit/
+    │   │   │   │               │   ├── RateLimitFilter.java
+    │   │   │   │               │   ├── RateLimitService.java
+    │   │   │   │               │   ├── RedisConfig.java
+    │   │   │   │               │   ├── TokenBucket.java
+    │   │   │   │               │   ├── controller/
+    │   │   │   │               │   │   └── RateLimitController.java
+    │   │   │   │               │   ├── dto/
+    │   │   │   │               │   │   ├── RateLimitPolicy.java
+    │   │   │   │               │   │   ├── RateLimitRequest.java
+    │   │   │   │               │   │   └── Response.java
+    │   │   │   │               │   ├── entity/
+    │   │   │   │               │   │   └── RateLimitConfig.java
+    │   │   │   │               │   ├── repository/
+    │   │   │   │               │   │   └── RateLimitRepository.java
+    │   │   │   │               │   └── service/
+    │   │   │   │               │       ├── RateLimitConfigService.java
+    │   │   │   │               │       └── RateLimitConfigServiceImpl.java
+    │   │   │   │               └── util/
+    │   │   │   │                   └── JwtUtils.java
+    │   │   │   └── resources/
+    │   │   │       └── application.properties
+    │   │   └── test/
+    │   │       └── java/
+    │   │           └── com/
+    │   │               └── suchit/
+    │   │                   └── apigateway/
+    │   │                       └── ApiGatewayApplicationTests.java
+    │   └── .mvn/
+    │       └── wrapper/
+    │           └── maven-wrapper.properties
+    ├── AuthService/
+    │   ├── mvnw
+    │   ├── mvnw.cmd
+    │   ├── pom.xml
+    │   ├── src/
+    │   │   ├── main/
+    │   │   │   ├── java/
+    │   │   │   │   └── com/
+    │   │   │   │       └── suchit/
+    │   │   │   │           └── auth/
+    │   │   │   │               ├── AuthServiceApplication.java
+    │   │   │   │               ├── config/
+    │   │   │   │               │   └── ModelMapperConfig.java
+    │   │   │   │               ├── controller/
+    │   │   │   │               │   └── AuthController.java
+    │   │   │   │               ├── dto/
+    │   │   │   │               │   ├── LoginRequest.java
+    │   │   │   │               │   ├── RegisterRequest.java
+    │   │   │   │               │   └── Response.java
+    │   │   │   │               ├── entity/
+    │   │   │   │               │   ├── Role.java
+    │   │   │   │               │   └── User.java
+    │   │   │   │               ├── exception/
+    │   │   │   │               │   ├── CustomAccessDeniedHandler.java
+    │   │   │   │               │   ├── CustomAuthenticationEntryPoint.java
+    │   │   │   │               │   ├── EmailAlreadyExistsException.java
+    │   │   │   │               │   ├── GlobalExceptionHandler.java
+    │   │   │   │               │   ├── InvalidCredentialsException.java
+    │   │   │   │               │   ├── NameValueRequiredException.java
+    │   │   │   │               │   └── NotFoundException.java
+    │   │   │   │               ├── repository/
+    │   │   │   │               │   └── UserRepository.java
+    │   │   │   │               ├── security/
+    │   │   │   │               │   ├── AuthFilter.java
+    │   │   │   │               │   ├── AuthUser.java
+    │   │   │   │               │   ├── CustomUserDetailsService.java
+    │   │   │   │               │   ├── JwtUtils.java
+    │   │   │   │               │   └── SecurityFilter.java
+    │   │   │   │               └── service/
+    │   │   │   │                   ├── AuthService.java
+    │   │   │   │                   └── AuthServiceImpl.java
+    │   │   │   └── resources/
+    │   │   │       └── application.properties
+    │   │   └── test/
+    │   │       └── java/
+    │   │           └── com/
+    │   │               └── suchit/
+    │   │                   └── auth/
+    │   │                       └── AuthServiceApplicationTests.java
+    │   └── .mvn/
+    │       └── wrapper/
+    │           └── maven-wrapper.properties
+    ├── OrderService/
+    │   ├── mvnw
+    │   ├── mvnw.cmd
+    │   ├── pom.xml
+    │   ├── src/
+    │   │   ├── main/
+    │   │   │   ├── java/
+    │   │   │   │   └── com/
+    │   │   │   │       └── suchit/
+    │   │   │   │           └── orderservice/
+    │   │   │   │               ├── OrderServiceApplication.java
+    │   │   │   │               ├── controller/
+    │   │   │   │               │   └── OrderController.java
+    │   │   │   │               ├── dto/
+    │   │   │   │               │   ├── OrderRequest.java
+    │   │   │   │               │   ├── OrderResponse.java
+    │   │   │   │               │   └── Response.java
+    │   │   │   │               ├── entity/
+    │   │   │   │               │   ├── Order.java
+    │   │   │   │               │   └── OrderStatus.java
+    │   │   │   │               ├── exception/
+    │   │   │   │               │   ├── GlobalExceptionHandler.java
+    │   │   │   │               │   └── NotFoundException.java
+    │   │   │   │               ├── repository/
+    │   │   │   │               │   └── OrderRepository.java
+    │   │   │   │               └── service/
+    │   │   │   │                   ├── OrderService.java
+    │   │   │   │                   └── OrderServiceImpl.java
+    │   │   │   └── resources/
+    │   │   │       └── application.properties
+    │   │   └── test/
+    │   │       └── java/
+    │   │           └── com/
+    │   │               └── suchit/
+    │   │                   └── orderservice/
+    │   │                       └── OrderServiceApplicationTests.java
+    │   └── .mvn/
+    │       └── wrapper/
+    │           └── maven-wrapper.properties
+    └── ProductService/
+        ├── mvnw
+        ├── mvnw.cmd
+        ├── pom.xml
+        ├── src/
+        │   ├── main/
+        │   │   ├── java/
+        │   │   │   └── com/
+        │   │   │       └── suchit/
+        │   │   │           └── productservice/
+        │   │   │               ├── ProductServiceApplication.java
+        │   │   │               ├── controller/
+        │   │   │               │   └── ProductController.java
+        │   │   │               ├── dto/
+        │   │   │               │   ├── ProductRequest.java
+        │   │   │               │   ├── ProductResponse.java
+        │   │   │               │   └── Response.java
+        │   │   │               ├── entity/
+        │   │   │               │   └── Product.java
+        │   │   │               ├── exception/
+        │   │   │               │   ├── GlobalExceptionHandler.java
+        │   │   │               │   ├── NotFoundException.java
+        │   │   │               │   └── ProductAlreadyExistsException.java
+        │   │   │               ├── repository/
+        │   │   │               │   └── ProductRepository.java
+        │   │   │               └── service/
+        │   │   │                   ├── ProductService.java
+        │   │   │                   └── ProductServiceImpl.java
+        │   │   └── resources/
+        │   │       └── application.properties
+        │   └── test/
+        │       └── java/
+        │           └── com/
+        │               └── suchit/
+        │                   └── product/
+        │                       └── ProductServiceApplicationTests.java
+        └── .mvn/
+            └── wrapper/
+                └── maven-wrapper.properties
+
 ```
 
 ## Rate Limiting Flow
